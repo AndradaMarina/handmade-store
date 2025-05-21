@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// src/App.jsx
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -8,11 +9,10 @@ import Checkout from './pages/Checkout';
 import Register from './pages/Register';
 import TestFirebase from './pages/TestFirebase';
 
-
-function App() {
+const App = () => {
   return (
-    <Router>
-      <Header/>
+    <>
+      <Header />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
@@ -22,8 +22,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/test" element={<TestFirebase />} />
       </Routes>
-    </Router>
+    </>
   );
-}
+};
 
 export default App;
