@@ -1,6 +1,5 @@
-// src/App.jsx
-import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetails from './pages/ProductDetails';
@@ -13,15 +12,17 @@ const App = () => {
   return (
     <>
       <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/products/:id" element={<ProductDetails />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/test" element={<TestFirebase />} />
-      </Routes>
+      <main className="max-w-6xl mx-auto px-4 pb-12">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<ProductDetails />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/test" element={<TestFirebase />} />
+        </Routes>
+      </main>
     </>
   );
 };

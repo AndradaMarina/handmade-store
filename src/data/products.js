@@ -9,11 +9,13 @@ const products = [
     },
     description: `Brățară handmade personalizată pentru orice ocazie. 
 Poți alege numele, mărimea, culoarea.
-Toate charm-urile sunt din rhinestone. Include ambalaj cadou personalizat.`,
+Toate charm-urile sunt din rhinestone.`,
     colors: ['roz', 'alb'],
     sizes: ['Bebeluș', 'Copil', 'Adult'],
     canBeEngraved: true,
-    hasGiftWrap: true
+    hasGiftWrap: true,
+    variantLabel: "Culoare"
+
   },
 
   {
@@ -36,7 +38,9 @@ Toate charm-urile sunt din rhinestone. Include ambalaj cadou personalizat.`,
     colors: ["orhidee", "lavandă"],
     sizes: [], // Nu se selectează
     canBeEngraved: false,
-    hasGiftWrap: true
+    hasGiftWrap: true,
+    variantLabel: "Parfum",
+
   }
 ];
 
