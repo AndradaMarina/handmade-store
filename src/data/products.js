@@ -1,24 +1,42 @@
 const products = [
   {
     id: '1',
-    name: 'Brățară din mărgele',
-    price: 45,
-    image: 'https://via.placeholder.com/200x200.png?text=Bratara',
-    description: 'Brățară handmade creată cu grijă din mărgele colorate.'
+    name: 'Brățară personalizată',
+    price: 89,
+    images: {
+     roz: '/images/bratara1.jpg',
+      alb: '/images/bratara2.jpg',
+    },
+    description: `Brățară handmade personalizată pentru orice ocazie. 
+Poți alege numele, mărimea, culoarea.
+Toate charm-urile sunt din rhinestone. Include ambalaj cadou personalizat.`,
+    colors: ['roz', 'alb'],
+    sizes: ['Bebeluș', 'Copil', 'Adult'],
+    canBeEngraved: true,
+    hasGiftWrap: true
   },
+
   {
-    id: '2',
-    name: 'Lumânare parfumată',
-    price: 65,
-    image: 'https://via.placeholder.com/200x200.png?text=Lumanare',
-    description: 'Lumânare naturală cu parfum de lavandă, turnată manual.'
-  },
-  {
-    id: '3',
-    name: 'Tablou cu flori presate',
-    price: 120,
-    image: 'https://via.placeholder.com/200x200.png?text=Tablou',
-    description: 'Tablou decorativ cu flori uscate, înrămat cu drag.'
+    id: "2",
+    name: "Lumânare parfumată cu cristale",
+    price: 75.99,
+    images: {
+      orhidee: [ "/images/lumanare-freesia.jpg", 
+        "/images/lumanare-freesia-marime.jpg"],
+      lavandă: ["/images/lumanare-lavender.jpg",
+        "/images/lumanare-lavender-marime.jpg"
+
+      ],
+
+    },
+    descriptionByColor: {
+      orhidee: "Lumânare de lux cu parfum de orhidee, cristale roz naturale și note florale fine. Ideală pentru relaxare și echilibru emoțional.",
+      lavandă: "Lumânare handmade cu ulei esențial de lavandă, perfectă pentru calmare, aromaterapie și decor elegant cu pietre semiprețioase."
+    },
+    colors: ["orhidee", "lavandă"],
+    sizes: [], // Nu se selectează
+    canBeEngraved: false,
+    hasGiftWrap: true
   }
 ];
 
