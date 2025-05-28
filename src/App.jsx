@@ -1,13 +1,15 @@
-import Header from './components/Header';
-import { Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Products from './pages/Products';
-import ProductDetails from './pages/ProductDetails';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Register from './pages/Register';
-import TestFirebase from './pages/TestFirebase';
-import Thanks from "./pages/Thanks";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+
+import Header from "./components/Header";
+import Home from "./pages/Home";
+import Products from "./pages/Products";
+import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Register from "./pages/Register";
+import TestFirebase from "./pages/TestFirebase";
+import Thanks from "./pages/Thanks.jsx";
 
 
 const App = () => {
