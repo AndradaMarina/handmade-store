@@ -7,6 +7,8 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Register from './pages/Register';
 import TestFirebase from './pages/TestFirebase';
+import Thanks from "./pages/Thanks";
+
 
 const App = () => {
   return (
@@ -21,6 +23,7 @@ const App = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/register" element={<Register />} />
           <Route path="/test" element={<TestFirebase />} />
+          <Route path="/thanks" element={<Thanks />} />
         </Routes>
       </main>
     </>

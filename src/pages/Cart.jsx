@@ -1,4 +1,6 @@
 import { useCart } from "../context/CartContext";
+import { Link } from "react-router-dom";
+
 
 const Cart = () => {
   const { cart, removeFromCart } = useCart();
@@ -40,6 +42,12 @@ const Cart = () => {
 
           <hr className="my-4" />
           <p className="text-right font-bold text-lg">Total: {total} lei</p>
+
+          <Link to="/checkout"
+           className="inline-block mt-4 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"> 
+           Finalizează comanda
+           </Link>
+
         </>
       )}
     </div>
