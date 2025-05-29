@@ -1,16 +1,19 @@
+// src/firebase/config.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDWNBRvi4Lt2MrJW3BpIJ7APckvewHSlmg",
   authDomain: "e-commerce-handmade.firebaseapp.com",
   projectId: "e-commerce-handmade",
-  storageBucket: "e-commerce-handmade.firebasestorage.app",
+  storageBucket: "e-commerce-handmade.appspot.com",
   messagingSenderId: "891034095334",
-  appId: "1:891034095334:web:e1b99fa01fbfaf1c12b527"
+  appId: "1:891034095334:web:e1b99fa01fbfaf1c12b527",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+export { db, auth };

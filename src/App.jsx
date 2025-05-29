@@ -10,6 +10,7 @@ import Checkout from "./pages/Checkout";
 import Register from "./pages/Register";
 import TestFirebase from "./pages/TestFirebase";
 import Thanks from "./pages/Thanks.jsx";
+import Footer from "./components/Footer";
 
 
 const App = () => {
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="/thanks" element={<Thanks />} />
         </Routes>
       </main>
+       <Footer />
     </>
   );
 };
