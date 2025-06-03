@@ -53,6 +53,7 @@ const LoginClient = () => {
           className="w-full p-2 border rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
           required
         />
         <input
@@ -61,23 +62,23 @@ const LoginClient = () => {
           className="w-full p-2 border rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           required
         />
         <button
           type="submit"
-          className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 cursor-pointer"
+          className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 cursor-pointer transition"
         >
           {isLogin ? "Intră în cont" : "Creează cont"}
         </button>
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       </form>
-
-      {error && <p className="text-red-500 mt-2">{error}</p>}
 
       <p className="mt-6 text-sm text-center text-gray-600">
         {isLogin ? "Nu ai cont?" : "Ai deja cont?"}{" "}
         <button
           onClick={() => setIsLogin(!isLogin)}
-          className="text-purple-600 hover:underline cursor-pointer"
+          className="text-purple-600 hover:underline cursor-pointer font-medium"
         >
           {isLogin ? "Înregistrează-te aici" : "Autentifică-te aici"}
         </button>
