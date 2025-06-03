@@ -1,19 +1,21 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import products from "../data/products";
 import { useCart } from "../context/CartContext";
 
 const ProductDetails = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const product = products.find((p) => p.id === id);
 
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
+  const initialColor = searchParams.get("color") || product.colors[0];
+  const [selectedColor, setSelectedColor] = useState(initialColor);
   const [selectedSize, setSelectedSize] = useState(product.sizes[0] || "");
   const [engraving, setEngraving] = useState("");
   const [giftWrap, setGiftWrap] = useState(false);
+  const [engravingImage, setEngravingImage] = useState(null);
   const { addToCart } = useCart();
 
-  // Imagine principală selectabilă
   const [mainImage, setMainImage] = useState(
     Array.isArray(product.images[selectedColor])
       ? product.images[selectedColor][0]
@@ -36,7 +38,6 @@ const ProductDetails = () => {
     <div className="max-w-3xl mx-auto p-4">
       <h1 className="text-2xl font-bold text-purple-700 mb-4">{product.name}</h1>
 
-      {/* Imagine principală */}
       <div className="mb-4">
         <img
           src={mainImage}
@@ -45,7 +46,6 @@ const ProductDetails = () => {
         />
       </div>
 
-      {/* Galerie imagini thumbnails */}
       {Array.isArray(product.images[selectedColor]) && (
         <div className="flex gap-4 mb-6">
           {product.images[selectedColor].map((img, i) => (
@@ -62,7 +62,6 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* Descriere */}
       <p className="mb-2 text-gray-700">
         {product.descriptionByColor
           ? product.descriptionByColor[selectedColor]
@@ -71,7 +70,6 @@ const ProductDetails = () => {
 
       <p className="mb-4 font-semibold text-lg">{product.price} lei</p>
 
-      {/* Parfum sau Culoare */}
       <div className="mb-4">
         <label className="block font-medium mb-1">
           {product.variantLabel || "Opțiune"}:
@@ -87,7 +85,6 @@ const ProductDetails = () => {
         </select>
       </div>
 
-      {/* Mărime doar dacă există */}
       {product.sizes && product.sizes.length > 0 && (
         <div className="mb-4">
           <label className="block font-medium mb-1">Mărime:</label>
@@ -103,7 +100,6 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* Gravură dacă e permisă */}
       {product.canBeEngraved && (
         <div className="mb-4">
           <label className="block font-medium mb-1">Text gravat:</label>
@@ -116,7 +112,26 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* Ambalaj cadou */}
+      {product.canUploadImage === true && (
+        <div className="mb-4">
+          <label className="block font-medium mb-1">Imagine gravată (opțional):</label>
+          <label className="cursor-pointer inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition duration-300">
+            Choose file
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setEngravingImage(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </label>
+          {engravingImage && (
+            <p className="mt-2 text-sm text-gray-600">
+              Fișier selectat: <span className="font-medium">{engravingImage.name}</span>
+            </p>
+          )}
+        </div>
+      )}
+
       {product.hasGiftWrap && (
         <div className="mb-4">
           <label className="inline-flex items-center">
@@ -131,19 +146,22 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* Buton coș */}
       <button
-        className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition"
+        className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 hover:shadow-md transition duration-300 cursor-pointer"
         onClick={() => {
-          addToCart({
+          const itemToAdd = {
             id: product.id,
             name: product.name,
             price: product.price + (giftWrap ? 10 : 0),
             variant: selectedColor,
             size: selectedSize,
-            engraving,
-            giftWrap
-          });
+            engraving: product.canBeEngraved ? engraving : "",
+            giftWrap,
+            engravingImage: product.canUploadImage ? engravingImage : null,
+          };
+
+          console.log("Produsul este trimis în coș:", itemToAdd);
+          addToCart(itemToAdd);
           alert("Produs adăugat în coș");
         }}
       >

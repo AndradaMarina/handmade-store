@@ -50,32 +50,52 @@ const Home = () => {
       </section>
 
       {/* Produse recomandate */}
-      <section className="space-y-10 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-semibold text-center text-gray-800">Recomandate</h2>
+      <section className="max-w-6xl mx-auto space-y-8 mt-20">
+        <div className="flex items-center justify-between px-2 md:px-0">
+          <h2 className="text-3xl font-bold text-gray-800">Recomandate</h2>
+          <Link to="/products" className="text-purple-600 hover:underline font-medium text-sm">
+            Vezi toate produsele →
+          </Link>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {recomandate.map((produs) => {
             const primaImagine = Array.isArray(Object.values(produs.images)[0])
               ? Object.values(produs.images)[0][0]
               : Object.values(produs.images)[0];
 
+            const variantPreviewImages = Object.values(produs.images)
+              .map((imgArray) => (Array.isArray(imgArray) ? imgArray[0] : imgArray))
+              .slice(0, 3);
+
             return (
               <div
                 key={produs.id}
-                className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden border border-gray-100"
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 overflow-hidden border border-gray-100"
               >
                 <img
                   src={primaImagine}
                   alt={produs.name}
-                  className="w-full h-56 object-cover"
+                  className="w-full h-56 object-cover hover:scale-105 transition-transform duration-300"
                 />
                 <div className="p-5">
-                  <h3 className="font-semibold text-lg mb-1 text-gray-800">{produs.name}</h3>
-                  <p className="text-purple-600 font-bold mb-2">{produs.price} lei</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{produs.name}</h3>
+                  <div className="flex gap-2 mb-3">
+                    {variantPreviewImages.map((preview, i) => (
+                      <img
+                        key={i}
+                        src={preview}
+                        alt={`variant-${i}`}
+                        className="w-10 h-10 object-cover border rounded"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-purple-700 font-bold mb-3">{produs.price} lei</p>
                   <Link
                     to={`/products/${produs.id}`}
-                    className="inline-block mt-2 px-5 py-2 text-sm border border-purple-700 text-purple-700 rounded hover:bg-purple-700 hover:text-white transition"
+                    className="inline-block text-sm px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
                   >
-                    Detalii
+                    Detalii produs
                   </Link>
                 </div>
               </div>

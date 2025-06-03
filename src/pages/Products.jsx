@@ -21,12 +21,30 @@ const Products = () => {
             <div className="p-4">
               <h2 className="text-lg font-semibold">{product.name}</h2>
               <p className="text-gray-700">{product.price} lei</p>
+
               <Link
-                to={`/products/${product.id}`}
+                to={`/products/${product.id}?color=${encodeURIComponent(defaultColor)}`}
                 className="text-purple-600 hover:underline text-sm mt-2 inline-block"
               >
                 Vezi detalii
               </Link>
+
+              {/* Previzualizare variante */}
+              <div className="flex gap-2 mt-3">
+                {product.colors.slice(0, 4).map((color, i) => {
+                  const img = Array.isArray(product.images[color]) ? product.images[color][0] : product.images[color];
+                  return (
+                    <Link key={i} to={`/products/${product.id}?color=${encodeURIComponent(color)}`}>
+                      <img
+                        src={img}
+                        alt={color}
+                        className="w-10 h-10 object-cover border rounded hover:scale-110 transition-transform duration-200"
+                        title={color}
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </div>
         );
@@ -36,4 +54,3 @@ const Products = () => {
 };
 
 export default Products;
-

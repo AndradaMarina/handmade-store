@@ -1,6 +1,6 @@
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
-
+import products from "../data/products";
 
 const Cart = () => {
   const { cart, removeFromCart } = useCart();
@@ -15,39 +15,73 @@ const Cart = () => {
         <p className="text-gray-600">Coșul este gol.</p>
       ) : (
         <>
-         {cart.map((item, index) => (
-  <div key={index} className="border-b pb-4 mb-4">
-    <h2 className="text-lg font-semibold">{item.name}</h2>
+          {cart.map((item, index) => {
+            const product = products.find((p) => p.id === item.id);
+            const image = product?.images?.[item.variant];
+            const mainImage = Array.isArray(image) ? image[0] : image;
 
-    {/* Afișează doar dacă există parfum */}
-    {item.parfum && <p>Parfum: {item.parfum}</p>}
+            return (
+              <div key={index} className="flex gap-4 border-b pb-4 mb-4 items-start">
+                {mainImage && (
+                  <img
+                    src={mainImage}
+                    alt={item.name}
+                    className="w-24 h-24 object-contain border rounded"
+                  />
+                )}
 
-    {/* Afișează doar dacă există gravură */}
-    {item.engraving && <p>Gravură: {item.engraving}</p>}
+                <div className="flex-1">
+                  <h2 className="text-lg font-semibold">{item.name}</h2>
 
-    {/* Afișează doar dacă e bifat ambalaj */}
-    {item.giftWrap && <p>Ambalaj cadou: Da</p>}
+                  <p className="text-sm text-gray-700">Culoare: {item.variant}</p>
 
-    <p className="text-purple-700 font-bold">{item.price} lei</p>
+                  {item.size && (
+                    <p className="text-sm text-gray-700">Mărime: {item.size}</p>
+                  )}
 
-    <button
-      onClick={() => removeFromCart(index)}
-      className="text-red-500 mt-2 hover:underline text-sm"
-    >
-      Șterge
-    </button>
-  </div>
-))}
+                  {item.engraving && (
+                    <p className="text-sm text-gray-700">Gravură: {item.engraving}</p>
+                  )}
 
+                  {item.engravingImage && (
+                    <div className="mt-1">
+                      <p className="text-sm text-gray-700">Imagine gravată:</p>
+                      <img
+                        src={URL.createObjectURL(item.engravingImage)}
+                        alt="engraving preview"
+                        className="w-16 h-16 object-cover mt-1 border rounded"
+                      />
+                    </div>
+                  )}
+
+                  {item.giftWrap && (
+                    <p className="text-sm text-green-700 font-medium mt-1">
+                      Ambalaj cadou: Da
+                    </p>
+                  )}
+
+                  <p className="text-purple-700 font-bold mt-2">{item.price} lei</p>
+
+                  <button
+                    onClick={() => removeFromCart(index)}
+                    className="text-red-500 mt-2 hover:underline text-sm"
+                  >
+                    Șterge
+                  </button>
+                </div>
+              </div>
+            );
+          })}
 
           <hr className="my-4" />
           <p className="text-right font-bold text-lg">Total: {total} lei</p>
 
-          <Link to="/checkout"
-           className="inline-block mt-4 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"> 
-           Finalizează comanda
-           </Link>
-
+          <Link
+            to="/checkout"
+            className="inline-block mt-4 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+          >
+            Finalizează comanda
+          </Link>
         </>
       )}
     </div>
