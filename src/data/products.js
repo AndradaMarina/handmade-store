@@ -104,14 +104,20 @@ Toate charm-urile sunt din rhinestone.`,
     silver: [
       "/images/colier-locket-silver1.jpg",
       "/images/colier-locket-silver2.jpg",
+      "/images/colier-locket-silver3.jpg",
+      "/images/colier-locket-silver4.jpg",
     ],
     gold: [
       "/images/colier-locket-gold1.jpg",
       "/images/colier-locket-gold2.jpg",
+      "/images/colier-locket-gold3.jpg",
+      "/images/colier-locket-gold4.jpg",
     ],
     rose: [
       "/images/colier-locket-rose1.jpg",
       "/images/colier-locket-rose2.jpg",
+      "/images/colier-locket-rose3.jpg",
+      "/images/colier-locket-rose4.jpg",
     ],
   },
   descriptionByColor: {

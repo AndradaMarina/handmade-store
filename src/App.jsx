@@ -21,6 +21,10 @@ import Login from "./pages/Login";
 // Admin
 import Admin from "./pages/Admin";
 
+// Protecții
+import AdminRoute from "./routes/AdminRoute";
+import PrivateRoute from "./routes/PrivateRoute";
+
 const App = () => {
   return (
     <>
@@ -37,11 +41,25 @@ const App = () => {
 
           {/* Autentificare clienți */}
           <Route path="/login-client" element={<LoginClient />} />
-          <Route path="/contul-meu" element={<Account />} />
+          <Route
+            path="/contul-meu"
+            element={
+              <PrivateRoute>
+                <Account />
+              </PrivateRoute>
+            }
+          />
 
-          {/* Admin */}
+          {/* Admin protejat */}
           <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </main>
       <Footer />
