@@ -2,15 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
 } from "firebase/auth";
-import { auth } from "../firebase/config";
+import { auth, googleProvider, db } from "../firebase/config";
+import { doc, setDoc } from "firebase/firestore";
+import { Eye, EyeOff } from "lucide-react";
 
 const LoginClient = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const errorMessages = {
@@ -18,21 +21,14 @@ const LoginClient = () => {
     "auth/user-not-found": "Nu există niciun cont cu acest email.",
     "auth/wrong-password": "Parola introdusă este greșită.",
     "auth/missing-password": "Introduceți parola.",
-    "auth/email-already-in-use": "Acest email este deja folosit.",
-    "auth/weak-password": "Parola trebuie să aibă cel puțin 6 caractere.",
     "auth/invalid-credential": "Emailul sau parola nu sunt corecte.",
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-
     try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
+      await signInWithEmailAndPassword(auth, email, password);
       navigate("/contul-meu");
     } catch (err) {
       const msg = errorMessages[err.code] || "A apărut o eroare. Încearcă din nou.";
@@ -40,49 +36,110 @@ const LoginClient = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      await setDoc(doc(db, "utilizatori", user.uid), {
+        email: user.email,
+        nume: user.displayName || "",
+        data: new Date(),
+      });
+      navigate("/contul-meu");
+    } catch (err) {
+      setError("Autentificarea cu Google a eșuat.");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) return setError("Introdu adresa de email pentru resetare.");
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Verifică emailul pentru resetarea parolei.");
+    } catch {
+      setError("Nu s-a putut trimite emailul de resetare.");
+    }
+  };
+
   return (
-    <div className="max-w-md mx-auto p-6 mt-10 bg-white rounded shadow">
-      <h1 className="text-2xl font-bold text-purple-700 mb-4">
-        {isLogin ? "Autentificare" : "Înregistrare"}
-      </h1>
+    <div className="max-w-4xl mx-auto p-8 mt-10 bg-white rounded shadow grid grid-cols-1 md:grid-cols-2 gap-12">
+      {/* LOGIN */}
+      <div>
+        <h2 className="text-xl font-bold mb-6 text-purple-700">Clienți existenți</h2>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-2 border rounded"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 border rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Parolă"
-          className="w-full p-2 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          required
-        />
-        <button
-          type="submit"
-          className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 cursor-pointer transition"
-        >
-          {isLogin ? "Intră în cont" : "Creează cont"}
-        </button>
-        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      </form>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Parolă"
+              className="w-full p-2 border rounded pr-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-purple-600 cursor-pointer"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
 
-      <p className="mt-6 text-sm text-center text-gray-600">
-        {isLogin ? "Nu ai cont?" : "Ai deja cont?"}{" "}
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-sm text-purple-600 hover:underline cursor-pointer"
+            >
+              Ai uitat parola?
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 transition cursor-pointer"
+          >
+            Intră în cont
+          </button>
+        </form>
+
         <button
-          onClick={() => setIsLogin(!isLogin)}
-          className="text-purple-600 hover:underline cursor-pointer font-medium"
+          onClick={handleGoogleLogin}
+          className="w-full mt-4 flex items-center justify-center gap-2 border border-gray-300 bg-white text-gray-800 hover:border-purple-600 py-2 px-4 rounded-full transition cursor-pointer"
         >
-          {isLogin ? "Înregistrează-te aici" : "Autentifică-te aici"}
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="google"
+            className="w-5 h-5"
+          />
+          Continuă cu Google
         </button>
-      </p>
+
+        {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+      </div>
+
+      {/* ÎNREGISTRARE */}
+      <div className="md:pl-4">
+        <h2 className="text-xl font-bold mb-4 text-purple-700">Client nou?</h2>
+        <p className="text-sm text-gray-700 mb-4">
+          Creează un cont pentru a urmări comenzile și a salva produse favorite.
+        </p>
+        <button
+          onClick={() => navigate("/inregistrare")}
+          className="w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 transition cursor-pointer"
+        >
+          Înregistrează-te acum
+        </button>
+      </div>
     </div>
   );
 };

@@ -13,24 +13,32 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Thanks from "./pages/Thanks";
 
-// Autentificare (admin & clienți)
+// Autentificare clienți
 import LoginClient from "./pages/LoginClient";
+import RegisterClient from "./pages/RegisterClient";
 import Account from "./pages/Account";
-import Login from "./pages/Login";
 
-// Admin
+// Autentificare admin
+import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 
-// Protecții
-import AdminRoute from "./routes/AdminRoute";
+// Rute protejate
 import PrivateRoute from "./routes/PrivateRoute";
+import AdminRoute from "./routes/AdminRoute";
+
+// Wishlist
+import Wishlist from "./pages/Wishlist";
 
 const App = () => {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
+      {/* Antetul aplicației */}
       <Header />
-      <main className="max-w-6xl mx-auto px-4 pb-12">
+
+      {/* Conținutul paginii */}
+      <main className="flex-grow max-w-6xl mx-auto px-4 pb-12">
         <Routes>
+
           {/* Pagini publice */}
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
@@ -38,9 +46,11 @@ const App = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/thanks" element={<Thanks />} />
+          <Route path="/wishlist" element={<Wishlist />} />
 
           {/* Autentificare clienți */}
           <Route path="/login-client" element={<LoginClient />} />
+          <Route path="/inregistrare" element={<RegisterClient />} />
           <Route
             path="/contul-meu"
             element={
@@ -50,7 +60,7 @@ const App = () => {
             }
           />
 
-          {/* Admin protejat */}
+          {/* Autentificare & dashboard admin */}
           <Route path="/login" element={<Login />} />
           <Route
             path="/admin"
@@ -60,10 +70,15 @@ const App = () => {
               </AdminRoute>
             }
           />
+          
+          {/* Pagina fallback opțională */}
+          <Route path="*" element={<div className="text-center py-10">Pagina nu a fost găsită</div>} />
         </Routes>
       </main>
+
+      {/* Subsolul aplicației */}
       <Footer />
-    </>
+    </div>
   );
 };
 

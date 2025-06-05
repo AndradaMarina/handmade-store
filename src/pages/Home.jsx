@@ -16,7 +16,6 @@ const Home = () => {
 
   return (
     <div className="space-y-24 px-4 md:px-12 py-10 bg-gradient-to-b from-purple-50 via-white to-white text-gray-800">
-      
       {/* Slider */}
       <section className="-mt-8">
         <HeroSlider />
@@ -89,7 +88,7 @@ const Home = () => {
                   className="w-full h-56 object-contain bg-white"
                 />
                 <div className="p-5 flex flex-col flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{produs.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 min-h-[48px]">{produs.name}</h3>
 
                   <div className="flex gap-2 mb-3">
                     {variantPreviewImages.map((variant, i) => (
@@ -105,7 +104,7 @@ const Home = () => {
                     ))}
                   </div>
 
-                  <p className="text-purple-700 font-bold mb-3">{produs.price} lei</p>
+                  <p className="text-purple-700 font-bold mb-3 min-h-[24px]">{produs.price} lei</p>
 
                   <div className="mt-auto">
                     <Link

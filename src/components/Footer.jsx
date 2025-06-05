@@ -40,10 +40,10 @@ const Footer = () => {
         <div>
           <h3 className="font-semibold mb-2">Navigare</h3>
           <ul className="space-y-1 text-sm text-gray-300">
-            <li><Link to="/" className="hover:text-white">Acasă</Link></li>
-            <li><Link to="/products" className="hover:text-white">Produse</Link></li>
-            <li><Link to="/cart" className="hover:text-white">Coș</Link></li>
-            <li><Link to="/checkout" className="hover:text-white">Finalizare</Link></li>
+            <li><Link to="/" className="hover:text-white transition">Acasă</Link></li>
+            <li><Link to="/products" className="hover:text-white transition">Produse</Link></li>
+            <li><Link to="/cart" className="hover:text-white transition">Coș</Link></li>
+            <li><Link to="/checkout" className="hover:text-white transition">Finalizare</Link></li>
           </ul>
         </div>
 
@@ -51,7 +51,7 @@ const Footer = () => {
         <div>
           <h3 className="font-semibold mb-2">Contact</h3>
           <ul className="text-sm text-gray-300 space-y-1">
-            <li><a href="mailto:contact@handmadestore.ro">contact@handmadestore.ro</a></li>
+            <li><a href="mailto:contact@handmadestore.ro" className="hover:underline">contact@handmadestore.ro</a></li>
             <li>Telefon: 0723 456 789</li>
           </ul>
         </div>
@@ -60,9 +60,9 @@ const Footer = () => {
         <div>
           <h3 className="font-semibold mb-2">Social Media</h3>
           <div className="flex space-x-4 text-lg text-purple-400">
-            <a href="#"><FaInstagram className="hover:text-white" /></a>
-            <a href="#"><FaFacebook className="hover:text-white" /></a>
-            <a href="#"><FaTiktok className="hover:text-white" /></a>
+            <a href="#" aria-label="Instagram"><FaInstagram className="hover:text-white transition" /></a>
+            <a href="#" aria-label="Facebook"><FaFacebook className="hover:text-white transition" /></a>
+            <a href="#" aria-label="Tiktok"><FaTiktok className="hover:text-white transition" /></a>
           </div>
         </div>
 
@@ -79,6 +79,7 @@ const Footer = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="px-3 py-2 rounded bg-white text-black text-sm"
+              required
             />
             <button
               type="submit"
@@ -99,4 +100,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
