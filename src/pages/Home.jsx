@@ -1,17 +1,34 @@
 import HeroSlider from "../components/HeroSlider";
 import { Link, useNavigate } from "react-router-dom";
-import productData from "../data/products";
 import Testimoniale from "../components/Testimoniale";
 import { Sparkles, Leaf, Gift } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/config";
 
 const Home = () => {
-  const recomandate = productData.slice(0, 3);
+  const [recomandate, setRecomandate] = useState([]);
   const navigate = useNavigate();
-  const [selectedVariants, setSelectedVariants] = useState({});
+
+  useEffect(() => {
+    const fetchProduse = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "produse"));
+        const produseArray = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setRecomandate(produseArray.slice(0, 3));
+      } catch (error) {
+        console.error("Eroare la preluarea produselor:", error);
+      }
+    };
+
+    fetchProduse();
+  }, []);
 
   const handleVariantClick = (productId, variantId) => {
-    navigate(`/products/${variantId}`);
+    navigate(`/products/${productId}?color=${encodeURIComponent(variantId)}`);
   };
 
   return (
@@ -38,21 +55,25 @@ const Home = () => {
 
       {/* Beneficii */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        <div className="p-6 bg-white rounded-xl shadow hover:shadow-md transition border border-purple-100">
-          <Sparkles className="w-10 h-10 mx-auto text-purple-600" />
-          <h3 className="font-bold mt-4 mb-2 text-lg">Unicat & Personalizat</h3>
-          <p className="text-sm text-gray-600">Fiecare produs e creat manual, cu opțiuni de personalizare.</p>
-        </div>
-        <div className="p-6 bg-white rounded-xl shadow hover:shadow-md transition border border-purple-100">
-          <Leaf className="w-10 h-10 mx-auto text-purple-600" />
-          <h3 className="font-bold mt-4 mb-2 text-lg">Natural & Handmade</h3>
-          <p className="text-sm text-gray-600">Folosim materiale naturale: soia, cristale, lemn, ață cerată.</p>
-        </div>
-        <div className="p-6 bg-white rounded-xl shadow hover:shadow-md transition border border-purple-100">
-          <Gift className="w-10 h-10 mx-auto text-purple-600" />
-          <h3 className="font-bold mt-4 mb-2 text-lg">Cadouri ideale</h3>
-          <p className="text-sm text-gray-600">Perfecte pentru aniversări, Crăciun, botez sau surprize de suflet.</p>
-        </div>
+        {[{
+          icon: <Sparkles className="w-10 h-10 mx-auto text-purple-600" />,
+          title: "Unicat & Personalizat",
+          desc: "Fiecare produs e creat manual, cu opțiuni de personalizare."
+        }, {
+          icon: <Leaf className="w-10 h-10 mx-auto text-purple-600" />,
+          title: "Natural & Handmade",
+          desc: "Folosim materiale naturale: soia, cristale, lemn, ață cerată."
+        }, {
+          icon: <Gift className="w-10 h-10 mx-auto text-purple-600" />,
+          title: "Cadouri ideale",
+          desc: "Perfecte pentru aniversări, Crăciun, botez sau surprize de suflet."
+        }].map((item, i) => (
+          <div key={i} className="p-6 bg-white rounded-xl shadow hover:shadow-md transition border border-purple-100">
+            {item.icon}
+            <h3 className="font-bold mt-4 mb-2 text-lg">{item.title}</h3>
+            <p className="text-sm text-gray-600">{item.desc}</p>
+          </div>
+        ))}
       </section>
 
       {/* Produse recomandate */}
@@ -97,9 +118,7 @@ const Home = () => {
                         src={variant.src}
                         alt={`variant-${i}`}
                         onClick={() => handleVariantClick(produs.id, variant.id)}
-                        className={`w-10 h-10 object-cover border rounded cursor-pointer ${
-                          selectedVariants[produs.id] === variant.id ? "ring-2 ring-purple-600" : ""
-                        }`}
+                        className="w-10 h-10 object-cover border rounded cursor-pointer hover:ring-2 hover:ring-purple-600 transition"
                       />
                     ))}
                   </div>

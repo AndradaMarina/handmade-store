@@ -4,13 +4,13 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { CartProvider } from './context/CartContext';
-import { WishlistProvider } from './context/WishlistContext'; // 🆕 Importăm contextul
+import { WishlistProvider } from './context/WishlistContext'; // Importăm contextul
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <CartProvider>
-        <WishlistProvider> {/* 🆕 Încapsulăm aplicația în contextul pentru favorite */}
+        <WishlistProvider> {/* Încapsulăm aplicația în contextul pentru favorite */}
           <App />
         </WishlistProvider>
       </CartProvider>

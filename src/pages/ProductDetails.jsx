@@ -1,6 +1,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import products from "../data/products";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
@@ -8,39 +9,64 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 const ProductDetails = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const product = products.find((p) => p.id === id);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
-  const initialColor = searchParams.get("color") || product.colors[0];
-  const [selectedColor, setSelectedColor] = useState(initialColor);
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [engraving, setEngraving] = useState("");
   const [giftWrap, setGiftWrap] = useState(false);
   const [engravingImage, setEngravingImage] = useState(null);
-
-  const [mainImage, setMainImage] = useState(
-    Array.isArray(product.images[selectedColor])
-      ? product.images[selectedColor][0]
-      : product.images[selectedColor]
-  );
+  const [mainImage, setMainImage] = useState("");
 
   useEffect(() => {
-    setMainImage(
-      Array.isArray(product.images[selectedColor])
-        ? product.images[selectedColor][0]
-        : product.images[selectedColor]
-    );
-  }, [selectedColor, product.images]);
+    const fetchProduct = async () => {
+      try {
+        const docRef = doc(db, "produse", id);
+        const snap = await getDoc(docRef);
 
-  if (!product) {
-    return <div className="p-4">Produsul nu a fost găsit.</div>;
-  }
+        if (snap.exists()) {
+          const data = snap.data();
+          setProduct(data);
+          const color = searchParams.get("color") || data.colors?.[0] || "";
+          setSelectedColor(color);
+          setSelectedSize(data.sizes?.[0] || "");
+          const defaultImage = Array.isArray(data.images?.[color])
+            ? data.images[color][0]
+            : data.images?.[color];
+          setMainImage(defaultImage);
+        } else {
+          setProduct(null); // important!
+        }
+      } catch (error) {
+        console.error("Eroare la preluarea produsului:", error.message);
+        setProduct(null); // fallback în caz de eroare
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id, searchParams]);
+
+  useEffect(() => {
+    if (product && selectedColor) {
+      const image = Array.isArray(product.images?.[selectedColor])
+        ? product.images[selectedColor][0]
+        : product.images?.[selectedColor];
+      setMainImage(image);
+    }
+  }, [selectedColor, product]);
+
+  if (loading) return <div className="p-4">Se încarcă...</div>;
+  if (!product) return <div className="p-4 text-center text-gray-600">Produsul nu a fost găsit.</div>;
 
   const handleAddToCart = () => {
     const itemToAdd = {
-      id: product.id,
+      id,
       name: product.name,
       price: product.price + (giftWrap ? 10 : 0),
       variant: selectedColor,
@@ -56,27 +82,25 @@ const ProductDetails = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-      {/* Titlu și icon wishlist */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-purple-700">{product.name}</h1>
         <button
           onClick={() =>
-            isInWishlist(product.id)
-              ? removeFromWishlist(product.id)
-              : addToWishlist(product)
+            isInWishlist(id)
+              ? removeFromWishlist(id)
+              : addToWishlist({ id, ...product })
           }
           className={`text-2xl transition duration-200 ${
-            isInWishlist(product.id)
+            isInWishlist(id)
               ? "text-red-500 hover:text-red-600"
               : "text-gray-400 hover:text-purple-600"
           } cursor-pointer`}
           title="Adaugă la favorite"
         >
-          {isInWishlist(product.id) ? <FaHeart /> : <FaRegHeart />}
+          {isInWishlist(id) ? <FaHeart /> : <FaRegHeart />}
         </button>
       </div>
 
-      {/* Imagine principală */}
       <div className="mb-4">
         <img
           src={mainImage}
@@ -85,8 +109,7 @@ const ProductDetails = () => {
         />
       </div>
 
-      {/* Galerie imagini (miniaturi) */}
-      {Array.isArray(product.images[selectedColor]) && (
+      {Array.isArray(product.images?.[selectedColor]) && (
         <div className="flex gap-4 mb-6">
           {product.images[selectedColor].map((img, i) => (
             <img
@@ -102,34 +125,29 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* Descriere & Preț */}
-      <p className="mb-2 text-gray-700">
-        {product.descriptionByColor
-          ? product.descriptionByColor[selectedColor]
-          : product.description}
-      </p>
+      <p className="mb-2 text-gray-700">{product.description}</p>
       <p className="mb-4 font-semibold text-lg">{product.price} lei</p>
 
-      {/* Selectare variantă */}
-      <div className="mb-4">
-        <label className="block font-medium mb-1">
-          {product.variantLabel || "Opțiune"}:
-        </label>
-        <select
-          value={selectedColor}
-          onChange={(e) => setSelectedColor(e.target.value)}
-          className="border p-2 rounded w-full bg-white text-black"
-        >
-          {product.colors.map((color, i) => (
-            <option key={i} value={color}>
-              {color}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Culoare */}
+      {product.colors && (
+        <div className="mb-4">
+          <label className="block font-medium mb-1">Opțiune:</label>
+          <select
+            value={selectedColor}
+            onChange={(e) => setSelectedColor(e.target.value)}
+            className="border p-2 rounded w-full bg-white text-black"
+          >
+            {product.colors.map((color, i) => (
+              <option key={i} value={color}>
+                {color}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
-      {/* Selectare mărime */}
-      {product.sizes && product.sizes.length > 0 && (
+      {/* Mărime */}
+      {product.sizes?.length > 0 && (
         <div className="mb-4">
           <label className="block font-medium mb-1">Mărime:</label>
           <select
@@ -146,7 +164,7 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* Gravură text */}
+      {/* Gravură */}
       {product.canBeEngraved && (
         <div className="mb-4">
           <label className="block font-medium mb-1">Text gravat:</label>
@@ -163,7 +181,7 @@ const ProductDetails = () => {
       {product.canUploadImage && (
         <div className="mb-4">
           <label className="block font-medium mb-1">
-            Imagine gravată (opțional):
+            Imagine gravură (opțional):
           </label>
           <label className="cursor-pointer inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition duration-300">
             Alege fișier
@@ -198,7 +216,6 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* Buton Adaugă în coș */}
       <button
         className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 hover:shadow-md transition duration-300 cursor-pointer"
         onClick={handleAddToCart}

@@ -1,16 +1,54 @@
 import { useForm } from "react-hook-form";
 import { useCart } from "../context/CartContext";
 import { db } from "../firebase/config";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, Timestamp, doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+import { useEffect } from "react";
 
 const Checkout = () => {
-  const { cart, clearCart } = useCart(); 
+  const { cart, clearCart } = useCart();
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const navigate = useNavigate();
   const auth = getAuth();
 
+  // 🔒 Redirecționează dacă nu e logat
+  useEffect(() => {
+    if (!auth.currentUser) {
+      navigate("/login-client");
+    }
+  }, [auth, navigate]);
+
+  // 📥 Preia automat datele din "utilizatori"
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!auth.currentUser) return;
+
+      try {
+        const docRef = doc(db, "utilizatori", auth.currentUser.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          reset({
+            nume: `${data.firstName || ""} ${data.lastName || ""}`,
+            email: data.email || auth.currentUser.email || "",
+            adresa: data.address || "",
+          });
+        } else {
+          reset({
+            email: auth.currentUser.email || "",
+          });
+        }
+      } catch (error) {
+        console.error("Eroare la preluarea datelor:", error.message);
+      }
+    };
+
+    fetchUserData();
+  }, [auth.currentUser, reset]);
+
+  // 📨 Trimite comanda în Firestore
   const onSubmit = async (data) => {
     try {
       await addDoc(collection(db, "comenzi"), {
@@ -23,8 +61,8 @@ const Checkout = () => {
       });
 
       reset();
-      clearCart(); // golește coșul
-      navigate("/thanks");
+      clearCart();
+      navigate("/thanks", { state: { nume: data.nume } });
     } catch (err) {
       alert("Eroare la trimiterea comenzii.");
       console.error(err);

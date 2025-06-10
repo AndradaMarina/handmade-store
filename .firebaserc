@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "e-commerce-handmade"
-  }
+    "default": "e-commerce-handmade",
+    "e-commerce-handmade": "e-commerce-handmade"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -1,7 +1,13 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { db } from "../firebase/config";
-import { collection, addDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { FaInstagram, FaFacebook, FaTiktok } from "react-icons/fa";
 
 const Footer = () => {
@@ -10,12 +16,21 @@ const Footer = () => {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
+    setConfirm("");
+
     if (!email.includes("@")) {
       setConfirm("Te rugăm să introduci un email valid.");
       return;
     }
 
     try {
+      const q = query(collection(db, "newsletter"), where("email", "==", email));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        setConfirm("Ești deja abonat.");
+        return;
+      }
+
       await addDoc(collection(db, "newsletter"), { email });
       setConfirm("Mulțumim pentru abonare!");
       setEmail("");
@@ -26,7 +41,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gray-900 text-white py-10 mt-16 px-4">
+    <footer className="bg-gray-900 text-white py-10 px-4 mt-auto">
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         {/* Descriere Brand */}
         <div>

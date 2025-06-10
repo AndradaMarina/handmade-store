@@ -21,6 +21,7 @@ import Account from "./pages/Account";
 // Autentificare admin
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
+import AdminEditProduct from "./pages/admin/AdminEditProduct"; 
 
 // Rute protejate
 import PrivateRoute from "./routes/PrivateRoute";
@@ -70,8 +71,16 @@ const App = () => {
               </AdminRoute>
             }
           />
-          
-          {/* Pagina fallback opțională */}
+          <Route
+            path="/admin/editeaza/:id" 
+            element={
+              <AdminRoute>
+                <AdminEditProduct />
+              </AdminRoute>
+            }
+          />
+
+          {/* Pagină fallback */}
           <Route path="*" element={<div className="text-center py-10">Pagina nu a fost găsită</div>} />
         </Routes>
       </main>
