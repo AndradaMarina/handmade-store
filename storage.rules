@@ -1,12 +1,20 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+    // Permite citirea tuturor fișierelor (pentru afișarea imaginilor în site)
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read: if true;
+    }
+    
+    // Permite upload doar pentru admin sau utilizatori autentificați
+    match /products/{allPaths=**} {
+      allow write: if request.auth != null;
+    }
+    
+    // Permite admin să facă orice
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == "9yGDw0kZi6V2MmsPNfpKW5bMaae2";
     }
   }
 }

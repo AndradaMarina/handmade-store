@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import ProductForm from "../../components/ProductForm";
 
@@ -37,6 +37,37 @@ const AdminEditProduct = () => {
       fetchProduct();
     }
   }, [id]);
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(`Ești sigur că vrei să ștergi produsul "${product.name}"? Această acțiune nu poate fi anulată.`);
+    if (!confirmed) return;
+
+    try {
+      await deleteDoc(doc(db, "produse", id));
+      alert("Produsul a fost șters cu succes!");
+      navigate("/admin");
+    } catch (error) {
+      console.error("Eroare la ștergerea produsului:", error);
+      alert("Eroare la ștergerea produsului!");
+    }
+  };
+
+  const handleProductUpdateSuccess = () => {
+    // Reîncarcă datele produsului după actualizare
+    const fetchUpdatedProduct = async () => {
+      try {
+        const docRef = doc(db, "produse", id);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          setProduct({ id: snap.id, ...snap.data() });
+        }
+      } catch (err) {
+        console.error("Eroare la reîncărcarea produsului:", err);
+      }
+    };
+    
+    fetchUpdatedProduct();
+  };
 
   if (loading) {
     return (
@@ -89,6 +120,17 @@ const AdminEditProduct = () => {
     );
   }
 
+  // Extrage prima imagine pentru preview
+  const getFirstImage = () => {
+    if (!product.images) return null;
+    const firstColor = Object.keys(product.images)[0];
+    if (!firstColor) return null;
+    const images = product.images[firstColor];
+    return Array.isArray(images) ? images[0] : images;
+  };
+
+  const firstImage = getFirstImage();
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -112,11 +154,14 @@ const AdminEditProduct = () => {
           <div className="hidden lg:block">
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 w-64">
               <div className="flex items-center space-x-3">
-                {product.images && product.images[0] ? (
+                {firstImage ? (
                   <img 
-                    src={product.images[0]} 
+                    src={firstImage} 
                     alt={product.name}
                     className="w-16 h-16 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/64x64/8B5CF6/FFFFFF?text=IMG";
+                    }}
                   />
                 ) : (
                   <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
@@ -141,12 +186,12 @@ const AdminEditProduct = () => {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">Status</p>
-                <p className="text-xs text-gray-600">{product.available ? "Disponibil" : "Indisponibil"}</p>
+                <p className="text-xs text-gray-600">{product.available !== false ? "Disponibil" : "Indisponibil"}</p>
               </div>
             </div>
 
@@ -212,7 +257,11 @@ const AdminEditProduct = () => {
         </div>
 
         <div className="p-6">
-          <ProductForm product={product} isEdit={true} />
+          <ProductForm 
+            product={product} 
+            isEdit={true} 
+            onSuccess={handleProductUpdateSuccess}
+          />
         </div>
       </div>
 
@@ -221,7 +270,7 @@ const AdminEditProduct = () => {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Acțiuni rapide</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
-            onClick={() => navigate(`/product/${product.id}`)}
+            onClick={() => navigate(`/products/${product.id}`)}
             className="flex items-center justify-center px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,13 +281,7 @@ const AdminEditProduct = () => {
           </button>
 
           <button
-            onClick={() => {
-              const confirmed = window.confirm("Ești sigur că vrei să ștergi acest produs?");
-              if (confirmed) {
-                // Implementează logica de ștergere
-                console.log("Ștergere produs:", product.id);
-              }
-            }}
+            onClick={handleDelete}
             className="flex items-center justify-center px-4 py-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,8 +292,8 @@ const AdminEditProduct = () => {
 
           <button
             onClick={() => {
-              // Implementează logica de duplicare
-              console.log("Duplicare produs:", product.id);
+              // Funcția de duplicare - poți implementa mai târziu
+              alert("Funcția de duplicare va fi implementată în curând!");
             }}
             className="flex items-center justify-center px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
           >

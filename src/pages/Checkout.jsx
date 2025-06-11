@@ -12,15 +12,15 @@ const Checkout = () => {
     register, 
     handleSubmit, 
     formState: { errors, isSubmitting }, 
-    reset
+    reset,
+    setValue
   } = useForm();
   const navigate = useNavigate();
   const auth = getAuth();
   
   const [loading, setLoading] = useState(true);
-  const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [isProcessingOrder, setIsProcessingOrder] = useState(false); // Flag nou!
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
 
   // Validări personalizate
   const validateEmail = (email) => {
@@ -58,11 +58,10 @@ const Checkout = () => {
     return true;
   };
 
-  // 🔒 Verifică autentificarea și coșul - DAR NU în timpul procesării!
+  // 🔒 Verifică autentificarea și coșul
   useEffect(() => {
     console.log("Auth user:", auth.currentUser);
     console.log("Cart contents:", cart);
-    console.log("Cart length:", cart?.length);
     console.log("Is processing order:", isProcessingOrder);
 
     if (!auth.currentUser) {
@@ -72,7 +71,6 @@ const Checkout = () => {
       return;
     }
 
-    // ✅ DOAR verifică coșul dacă NU procesează comanda
     if (!isProcessingOrder && (!cart || cart.length === 0)) {
       console.log("Cart is empty and not processing, redirecting to cart page");
       navigate("/cart", { 
@@ -84,56 +82,138 @@ const Checkout = () => {
     setLoading(false);
   }, [auth.currentUser, cart, navigate, isProcessingOrder]);
 
-  // 📥 Preia datele utilizatorului
+  // 📥 Preia și unifică datele utilizatorului din TOATE sursele
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchAllUserData = async () => {
       if (!auth.currentUser || loading) return;
 
       try {
-        const docRef = doc(db, "utilizatori", auth.currentUser.uid);
-        const docSnap = await getDoc(docRef);
+        console.log("Fetching user data for:", auth.currentUser.uid);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          reset({
-            nume: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-            email: data.email || auth.currentUser.email || "",
-            telefon: data.telephone || "",
-            adresa: data.address || "",
-            observatii: "",
-            cardNumber: "",
-            cardName: "",
-            expiryDate: "",
-            cvv: ""
-          });
-        } else {
-          reset({
-            nume: auth.currentUser.displayName || "",
-            email: auth.currentUser.email || "",
-            telefon: "",
-            adresa: "",
-            observatii: "",
-            cardNumber: "",
-            cardName: "",
-            expiryDate: "",
-            cvv: ""
-          });
+        // Structură finală pentru date
+        let userData = {
+          nume: "",
+          email: auth.currentUser.email || "",
+          telefon: "",
+          adresa: "",
+          observatii: "",
+          cardNumber: "",
+          cardName: "",
+          expiryDate: "",
+          cvv: ""
+        };
+
+        // 1. Încearcă să încarce din "utilizatori" (MyDetails format)
+        try {
+          const userDocRef = doc(db, "utilizatori", auth.currentUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          if (userDocSnap.exists()) {
+            const userDoc = userDocSnap.data();
+            console.log("Found utilizatori data:", userDoc);
+            
+            // Format MyDetails (nume, prenume, telefon)
+            if (userDoc.nume && userDoc.prenume) {
+              userData.nume = `${userDoc.prenume} ${userDoc.nume}`.trim();
+            } else if (userDoc.firstName && userDoc.lastName) {
+              // Format RegisterClient (firstName, lastName)
+              userData.nume = `${userDoc.firstName} ${userDoc.lastName}`.trim();
+            }
+            
+            if (userDoc.telefon || userDoc.telephone) {
+              userData.telefon = userDoc.telefon || userDoc.telephone || "";
+            }
+            
+            if (userDoc.email) {
+              userData.email = userDoc.email;
+            }
+            
+            // Adresă din utilizatori dacă există
+            if (userDoc.address) {
+              userData.adresa = userDoc.address;
+            }
+          }
+        } catch (error) {
+          console.log("No utilizatori document or error:", error);
         }
-        setUserDataLoaded(true);
+
+        // 2. Încearcă să încarce din "adrese" (AdressBook format)
+        try {
+          const addressDocRef = doc(db, "adrese", auth.currentUser.uid);
+          const addressDocSnap = await getDoc(addressDocRef);
+          
+          if (addressDocSnap.exists()) {
+            const addressDoc = addressDocSnap.data();
+            console.log("Found adrese data:", addressDoc);
+            
+            // Suprascrie cu date din adrese (mai recente)
+            if (addressDoc.nume && addressDoc.prenume) {
+              userData.nume = `${addressDoc.prenume} ${addressDoc.nume}`.trim();
+            }
+            
+            if (addressDoc.telefon) {
+              userData.telefon = addressDoc.telefon;
+            }
+            
+            if (addressDoc.adresa) {
+              userData.adresa = addressDoc.adresa;
+            }
+          }
+        } catch (error) {
+          console.log("No adrese document or error:", error);
+        }
+
+        // 3. Încearcă să încarce din "plati" (PaymentAndBilling format)
+        try {
+          const paymentDocRef = doc(db, "plati", auth.currentUser.uid);
+          const paymentDocSnap = await getDoc(paymentDocRef);
+          
+          if (paymentDocSnap.exists()) {
+            const paymentDoc = paymentDocSnap.data();
+            console.log("Found plati data:", paymentDoc);
+            
+            // Completează doar numele de pe card și data expirării
+            if (paymentDoc.titular) {
+              userData.cardName = paymentDoc.titular;
+            }
+            
+            if (paymentDoc.expira) {
+              userData.expiryDate = paymentDoc.expira;
+            }
+            
+            // NU completăm numărul cardului din motive de securitate
+          }
+        } catch (error) {
+          console.log("No plati document or error:", error);
+        }
+
+        // 4. Fallback la date din Firebase Auth
+        if (!userData.nume && auth.currentUser.displayName) {
+          userData.nume = auth.currentUser.displayName;
+        }
+
+        console.log("Final merged user data:", userData);
+
+        // Aplică toate datele în formular
+        Object.keys(userData).forEach(key => {
+          if (userData[key]) {
+            setValue(key, userData[key]);
+          }
+        });
+
       } catch (error) {
         console.error("Eroare la preluarea datelor utilizatorului:", error);
         setSubmitError("Eroare la încărcarea datelor. Te rugăm să reîmprospătezi pagina.");
-        setUserDataLoaded(true);
       }
     };
 
-    fetchUserData();
-  }, [auth.currentUser, reset, loading]);
+    fetchAllUserData();
+  }, [auth.currentUser, loading, setValue]);
 
   // 📨 Trimite comanda
   const onSubmit = async (data) => {
     setSubmitError("");
-    setIsProcessingOrder(true); // ✅ Setează flag-ul ÎNAINTE de orice
+    setIsProcessingOrder(true);
     
     try {
       const total = getCartTotal();
@@ -160,15 +240,15 @@ const Checkout = () => {
         })),
         total: total,
         dataCreare: Timestamp.now(),
-        data: Timestamp.now(), // Pentru compatibilitate cu cod existent
+        data: Timestamp.now(),
         uid: auth.currentUser.uid,
         procesata: false,
         livrata: false,
         status: "nou",
-        metodaPlata: "card", // ✅ DOAR CARD
+        metodaPlata: "card",
         numarProduse: itemsCount,
         
-        // Date plată (fără a salva datele reale ale cardului din motive de securitate)
+        // Date plată (fără a salva datele reale ale cardului)
         plataSumar: {
           metodaPlata: "card",
           ultimeleCifre: data.cardNumber ? data.cardNumber.slice(-4) : "",
@@ -186,8 +266,30 @@ const Checkout = () => {
       // Salvează comanda în Firestore
       const docRef = await addDoc(collection(db, "comenzi"), orderData);
       console.log("Order saved with ID:", docRef.id);
+
+      // 💾 SALVEAZĂ datele utilizatorului pentru viitor (OPTIONAL)
+      try {
+        // Actualizează adresa dacă este diferită
+        const addressRef = doc(db, "adrese", auth.currentUser.uid);
+        const currentAddressSnap = await getDoc(addressRef);
+        
+        if (!currentAddressSnap.exists() || currentAddressSnap.data().adresa !== data.adresa) {
+          const [prenume, ...numeParts] = data.nume.split(' ');
+          await setDoc(addressRef, {
+            prenume: prenume || "",
+            nume: numeParts.join(' ') || "",
+            telefon: data.telefon,
+            adresa: data.adresa,
+            uid: auth.currentUser.uid
+          });
+          console.log("Updated user address for future orders");
+        }
+      } catch (error) {
+        console.log("Could not save user data for future:", error);
+        // Nu oprește procesul de comandă pentru această eroare
+      }
       
-      // ✅ NAVIGEAZĂ DIRECT, fără clearCart aici!
+      // ✅ NAVIGEAZĂ DIRECT
       navigate("/thanks", { 
         state: { 
           nume: data.nume,
@@ -195,10 +297,10 @@ const Checkout = () => {
           total: total,
           metodaPlata: "card"
         },
-        replace: true // ✅ Înlocuiește pagina în istoric
+        replace: true
       });
 
-      // ✅ Doar DUPĂ navigare curăță totul
+      // ✅ Curăță totul DUPĂ navigare
       setTimeout(() => {
         clearCart();
         reset();
@@ -206,9 +308,8 @@ const Checkout = () => {
       
     } catch (error) {
       console.error("Eroare la trimiterea comenzii:", error);
-      setIsProcessingOrder(false); // ✅ Resetează flag-ul la eroare
+      setIsProcessingOrder(false);
       
-      // Mesaje de eroare mai specifice
       if (error.code === 'permission-denied') {
         setSubmitError("Nu aveți permisiunea să plasați această comandă. Verificați dacă sunteți logat.");
       } else if (error.code === 'unavailable') {
@@ -236,12 +337,12 @@ const Checkout = () => {
   };
 
   // Loading state
-  if (loading || !userDataLoaded) {
+  if (loading) {
     return (
       <div className="max-w-2xl mx-auto p-4">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-          <span className="ml-3 text-gray-600">Se încarcă...</span>
+          <span className="ml-3 text-gray-600">Se încarcă datele...</span>
         </div>
       </div>
     );
@@ -255,6 +356,18 @@ const Checkout = () => {
       <h1 className="text-3xl font-bold mb-6 text-purple-700">
         💳 Finalizare comandă cu cardul
       </h1>
+
+      {/* Info box pentru autocompletare */}
+      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <svg className="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <p className="text-blue-800 text-sm">
+            <strong>💡 Datele tale au fost precompletate</strong> din contul tău pentru o experiență mai rapidă!
+          </p>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formularul - 2/3 din spațiu */}

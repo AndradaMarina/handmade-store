@@ -1,5 +1,5 @@
-// src/pages/Account.jsx
 import { useState } from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import AccountOverview from "../components/AccountOverview";
 import MyDetails from "../components/MyDetails";
 import LoginDetails from "../components/LoginDetails";
@@ -8,68 +8,74 @@ import AddressBook from "../components/AddressBook";
 import PaymentAndBilling from "../components/PaymentAndBilling";
 
 const Account = () => {
-  const [selectedSection, setSelectedSection] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Determină secțiunea activă din URL
+  const getActiveSection = () => {
+    const path = location.pathname;
+    if (path.includes('/comenzi')) return 'orders';
+    if (path.includes('/date-personale')) return 'details';
+    if (path.includes('/autentificare')) return 'login';
+    if (path.includes('/adrese')) return 'address';
+    if (path.includes('/plati')) return 'payment';
+    return 'overview';
+  };
+
+  const activeSection = getActiveSection();
 
   const sections = [
     {
       key: "overview",
       label: "Prezentare generală",
       icon: "📊",
-      description: "Vedere de ansamblu asupra contului"
+      description: "Vedere de ansamblu asupra contului",
+      path: "/contul-meu"
     },
     {
       key: "details",
       label: "Datele mele",
       icon: "👤",
-      description: "Informații personale"
+      description: "Informații personale",
+      path: "/contul-meu/date-personale"
     },
     {
       key: "login",
       label: "Date de autentificare",
       icon: "🔐",
-      description: "Parolă și securitate"
+      description: "Parolă și securitate",
+      path: "/contul-meu/autentificare"
     },
     {
       key: "orders",
       label: "Comenzile mele",
       icon: "📦",
-      description: "Istoricul comenzilor"
+      description: "Istoricul comenzilor",
+      path: "/contul-meu/comenzi"
     },
     {
       key: "address",
       label: "Agenda de adrese",
       icon: "📍",
-      description: "Adrese de livrare"
+      description: "Adrese de livrare",
+      path: "/contul-meu/adrese"
     },
     {
       key: "payment",
       label: "Plata & facturare",
       icon: "💳",
-      description: "Metode de plată"
+      description: "Metode de plată",
+      path: "/contul-meu/plati"
     }
   ];
 
-  const renderSection = () => {
-    switch (selectedSection) {
-      case "overview":
-        return <AccountOverview />;
-      case "details":
-        return <MyDetails />;
-      case "login":
-        return <LoginDetails />;
-      case "orders":
-        return <MyOrders />;
-      case "address":
-        return <AddressBook />;
-      case "payment":
-        return <PaymentAndBilling />;
-      default:
-        return <AccountOverview />;
-    }
+  const handleSectionClick = (section) => {
+    navigate(section.path);
+    setSidebarOpen(false);
   };
 
-  const currentSection = sections.find(section => section.key === selectedSection);
+  const currentSection = sections.find(section => section.key === activeSection);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -115,12 +121,9 @@ const Account = () => {
                 {sections.map((section) => (
                   <button
                     key={section.key}
-                    onClick={() => {
-                      setSelectedSection(section.key);
-                      setSidebarOpen(false);
-                    }}
+                    onClick={() => handleSectionClick(section)}
                     className={`w-full flex items-start p-4 rounded-lg transition-all duration-200 group ${
-                      selectedSection === section.key
+                      activeSection === section.key
                         ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md"
                         : "hover:bg-gray-50 text-gray-700 hover:text-purple-600"
                     }`}
@@ -131,7 +134,7 @@ const Account = () => {
                     <div className="text-left">
                       <div className="font-medium">{section.label}</div>
                       <div className={`text-sm mt-1 ${
-                        selectedSection === section.key 
+                        activeSection === section.key 
                           ? "text-purple-100" 
                           : "text-gray-500"
                       }`}>
@@ -176,9 +179,18 @@ const Account = () => {
               </div>
             </div>
 
-            {/* Content */}
+            {/* Content cu Routes */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[500px]">
-              {renderSection()}
+              <Routes>
+                <Route path="/" element={<AccountOverview />} />
+                <Route path="/date-personale" element={<MyDetails />} />
+                <Route path="/autentificare" element={<LoginDetails />} />
+                <Route path="/comenzi" element={<MyOrders />} />
+                <Route path="/adrese" element={<AddressBook />} />
+                <Route path="/plati" element={<PaymentAndBilling />} />
+                {/* Fallback pentru rute necunoscute */}
+                <Route path="*" element={<AccountOverview />} />
+              </Routes>
             </div>
           </main>
         </div>

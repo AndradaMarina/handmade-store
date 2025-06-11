@@ -55,8 +55,10 @@ const App = () => {
               {/* Autentificare clienți */}
               <Route path="/login-client" element={<LoginClient />} />
               <Route path="/inregistrare" element={<RegisterClient />} />
+              
+              {/* RUTE CORECTE PENTRU CONTUL UTILIZATORULUI */}
               <Route
-                path="/contul-meu"
+                path="/contul-meu/*"
                 element={
                   <ErrorBoundary>
                     <PrivateRoute>
