@@ -29,7 +29,10 @@ const Footer = () => {
 
     try {
       // Verifică dacă emailul există deja
-      const q = query(collection(db, "newsletter"), where("email", "==", email.toLowerCase().trim()));
+      const q = query(
+        collection(db, "newsletter"), 
+        where("email", "==", email.toLowerCase().trim())
+      );
       const snapshot = await getDocs(q);
       
       if (!snapshot.empty) {
@@ -53,12 +56,16 @@ const Footer = () => {
       
     } catch (error) {
       console.error("Eroare la salvarea în newsletter:", error);
+      console.error("Cod eroare:", error.code);
+      console.error("Mesaj eroare:", error.message);
       
       // Mesaje de eroare mai specifice
       if (error.code === 'permission-denied') {
         setConfirm("Nu ai permisiunea să te abonezi. Contactează administratorul.");
       } else if (error.code === 'unavailable') {
         setConfirm("Serviciul este temporar indisponibil. Încearcă din nou mai târziu.");
+      } else if (error.code === 'failed-precondition') {
+        setConfirm("Eroare de configurare. Contactează administratorul.");
       } else {
         setConfirm("A apărut o eroare. Te rugăm să încerci din nou.");
       }
