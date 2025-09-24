@@ -91,13 +91,13 @@ const ProductsTab = () => {
       },
     }));
   };
-
+  //Adaugarea produselor
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("Se încarcă imaginile...");
     setUploading(true);
 
-    try {
+    try {//Upload imagini pentru fiecare culoare
       const colorsArray = formData.colors.split(",").map((c) => c.trim());
       const images = {};
 
@@ -117,7 +117,7 @@ const ProductsTab = () => {
 
         images[color] = urls;
       }
-
+      //Salvare produs in Firestore
       await addDoc(collection(db, "produse"), {
         name: formData.name,
         price: parseFloat(formData.price),

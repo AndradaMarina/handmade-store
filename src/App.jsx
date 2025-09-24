@@ -23,7 +23,7 @@ const Account = React.lazy(() => import("./pages/Account"));
 // Autentificare admin
 const Login = React.lazy(() => import("./pages/Login"));
 const Admin = React.lazy(() => import("./pages/Admin"));
-const AdminEditProduct = React.lazy(() => import("./pages/admin/AdminEditProduct"));
+const AdminEditProduct = React.lazy(() => import("./admin/tabs/EditProducts"));
 
 // Rute protejate
 import PrivateRoute from "./routes/PrivateRoute";

@@ -6,6 +6,7 @@ import {
   useCallback
 } from "react";
 
+//CartContext-persistenta cosului
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
